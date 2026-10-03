@@ -36,6 +36,57 @@ const edgeTypes = {
   marriage: MarriageEdge,
 };
 
+type RelationLink = { id: string; key: "father_id" | "mother_id"; value: string };
+
+async function syncRelations(persons: Person[], marriages: Marriage[]) {
+  const headers = { "Content-Type": "application/json" };
+  const spousesOf = (id: string) =>
+    marriages
+      .filter((m) => m.husband_id === id || m.wife_id === id)
+      .map((m) => (m.husband_id === id ? m.wife_id : m.husband_id));
+
+  const candidates = persons.flatMap<RelationLink>((p) => {
+    if (Boolean(p.father_id) === Boolean(p.mother_id)) return [];
+    const spouses = spousesOf((p.father_id || p.mother_id) as string);
+    return spouses.length === 1 ? [{ id: p.id, key: p.father_id ? "mother_id" : "father_id", value: spouses[0] }] : [];
+  });
+
+  const pairs = new Map<string, [string, string]>();
+  for (const p of persons) {
+    if (p.father_id && p.mother_id && !marriages.some((m) => m.husband_id === p.father_id && m.wife_id === p.mother_id)) {
+      pairs.set(`${p.father_id}|${p.mother_id}`, [p.father_id, p.mother_id]);
+    }
+  }
+
+  const [linked, created] = await Promise.all([
+    Promise.all(
+      candidates.map((l) =>
+        fetch(`/api/persons/${l.id}`, { method: "PATCH", headers, body: JSON.stringify({ [l.key]: l.value }) }).then((r) => r.ok)
+      )
+    ),
+    Promise.all(
+      [...pairs.values()].map(([husbandId, wifeId]) =>
+        fetch("/api/marriages", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ husband_id: husbandId, wife_id: wifeId, marriage_order: 1, status: "married" }),
+        }).then((r) => (r.ok ? r.json() : null))
+      )
+    ),
+  ]);
+
+  return {
+    links: candidates.filter((_, i) => linked[i]),
+    newMarriages: created.filter(Boolean).map((m): Marriage => ({
+      id: m.id,
+      husband_id: m.husband_id,
+      wife_id: m.wife_id,
+      marriage_order: m.marriage_order,
+      status: m.status,
+    })),
+  };
+}
+
 export function FamilyTreeCanvas() {
   const [persons, setPersons] = useState<Person[]>([]);
   const [marriages, setMarriages] = useState<Marriage[]>([]);
@@ -85,8 +136,7 @@ export function FamilyTreeCanvas() {
 
           setReferenceUserId((prev) => {
             if (prev && loadedPersons.some((p) => p.id === prev)) return prev;
-            const bayu = loadedPersons.find((p) => p.full_name.toLowerCase().includes("bayu"));
-            return bayu ? bayu.id : loadedPersons[0].id;
+            return loadedPersons[0].id;
           });
         }
 
@@ -99,6 +149,22 @@ export function FamilyTreeCanvas() {
             status: m.status,
           }));
           setMarriages(loadedMarriages);
+        }
+
+        if (Array.isArray(personsData) && Array.isArray(marriagesData)) {
+          const { links, newMarriages } = await syncRelations(personsData, marriagesData);
+          if (!isMounted) return;
+          if (links.length > 0) {
+            setPersons((prev) =>
+              prev.map((p) => {
+                const link = links.find((l) => l.id === p.id);
+                return link ? { ...p, [link.key]: link.value } : p;
+              })
+            );
+          }
+          if (newMarriages.length > 0) {
+            setMarriages((prev) => [...prev, ...newMarriages]);
+          }
         }
       } catch (err) {
         console.error("fetchData:", err instanceof Error ? err.message : err);
@@ -136,6 +202,26 @@ export function FamilyTreeCanvas() {
     setReferenceUserId(id);
   };
 
+  const ensureMarriage = async (husbandId: string | null, wifeId: string | null) => {
+    if (!husbandId || !wifeId) return;
+    if (marriages.some((m) => m.husband_id === husbandId && m.wife_id === wifeId)) return;
+    try {
+      const res = await fetch("/api/marriages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ husband_id: husbandId, wife_id: wifeId, marriage_order: 1, status: "married" }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        console.error("ensureMarriage:", data.error || res.statusText);
+        return;
+      }
+      setMarriages((prev) => [...prev, { id: data.id, husband_id: husbandId, wife_id: wifeId, marriage_order: 1, status: "married" }]);
+    } catch (err) {
+      console.error("ensureMarriage:", err instanceof Error ? err.message : err);
+    }
+  };
+
   const handleUpdatePerson = async (updated: Person) => {
     const previousPerson = persons.find((p) => p.id === updated.id) || selectedPerson;
     setPersons((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
@@ -161,7 +247,9 @@ export function FamilyTreeCanvas() {
           setPersons((prev) => prev.map((p) => (p.id === updated.id ? previousPerson : p)));
           setSelectedPerson(previousPerson);
         }
+        return;
       }
+      await ensureMarriage(updated.father_id, updated.mother_id);
     } catch (err) {
       console.error("handleUpdatePerson:", err instanceof Error ? err.message : err);
       if (previousPerson) {
@@ -297,6 +385,23 @@ export function FamilyTreeCanvas() {
 
       setPersons((prev) => [...prev, newPartner]);
       setMarriages((prev) => [...prev, newMarriage]);
+
+      const parentKey = person.gender === "male" ? "father_id" : "mother_id";
+      const partnerKey = person.gender === "male" ? "mother_id" : "father_id";
+      const orphans = persons.filter((p) => p[parentKey] === person.id && !p[partnerKey]);
+      const linked = await Promise.all(
+        orphans.map((c) =>
+          fetch(`/api/persons/${c.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ [partnerKey]: partnerId }),
+          }).then((r) => r.ok)
+        )
+      );
+      const linkedIds = orphans.filter((_, i) => linked[i]).map((c) => c.id);
+      if (linkedIds.length > 0) {
+        setPersons((prev) => prev.map((p) => (linkedIds.includes(p.id) ? { ...p, [partnerKey]: partnerId } : p)));
+      }
     } catch (err) {
       console.error("handleAddPartner:", err instanceof Error ? err.message : err);
     }
@@ -348,13 +453,13 @@ export function FamilyTreeCanvas() {
         return;
       }
 
-      setPersons((prev) => {
-        const updatedChild = {
-          ...child,
-          [relationType === "father" ? "father_id" : "mother_id"]: newParentId,
-        };
-        return [...prev.map((p) => (p.id === child.id ? updatedChild : p)), newParent];
-      });
+      const updatedChild = {
+        ...child,
+        [relationType === "father" ? "father_id" : "mother_id"]: newParentId,
+      };
+      setPersons((prev) => [...prev.map((p) => (p.id === child.id ? updatedChild : p)), newParent]);
+      setSelectedPerson(updatedChild);
+      await ensureMarriage(updatedChild.father_id, updatedChild.mother_id);
     } catch (err) {
       console.error("handleAddParent:", err instanceof Error ? err.message : err);
     }

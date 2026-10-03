@@ -38,6 +38,10 @@ export function getKinshipTitle(
   const father = ref.father_id ? personMap.get(ref.father_id) : undefined;
   const mother = ref.mother_id ? personMap.get(ref.mother_id) : undefined;
 
+  if ([father, mother].some((p) => p && getSpouseIds(p.id).includes(target.id))) {
+    return target.gender === "male" ? "Ayah Tiri" : "Ibu Tiri";
+  }
+
   if (father && (father.father_id === target.id || (mother && mother.father_id === target.id))) {
     return "Kakek";
   }
@@ -63,6 +67,11 @@ export function getKinshipTitle(
   );
   if (isGreatGrandparent) return "Buyut";
 
+  if ([...grandfathers, ...grandmothers].some((gp) => getSpouseIds(gp.id).includes(target.id))) {
+    return target.gender === "male" ? "Kakek" : "Nenek";
+  }
+  if ([...grandfathers, ...grandmothers].some((gp) => areSiblings(target, gp))) return "Mbah";
+
   if (areSiblings(target, ref)) {
     if (target.birth_order < ref.birth_order) {
       return target.gender === "male" ? "Kakak (Mas)" : "Kakak (Mbak)";
@@ -72,6 +81,11 @@ export function getKinshipTitle(
     }
     return target.gender === "male" ? "Saudara Laki-laki" : "Saudara Perempuan";
   }
+
+  const isStepSibling = [father, mother].some(
+    (p) => p && getSpouseIds(p.id).some((sid) => target.father_id === sid || target.mother_id === sid)
+  );
+  if (isStepSibling) return "Saudara Tiri";
 
   if (target.father_id === ref.id || target.mother_id === ref.id) {
     return target.gender === "male" ? "Anak Laki-laki" : "Anak Perempuan";
@@ -137,6 +151,17 @@ export function getKinshipTitle(
 
   const isChildSpouse = refChildren.some((c) => getSpouseIds(c.id).includes(target.id));
   if (isChildSpouse) return "Menantu";
+
+  const isGrandchildSpouse = targetSpouses.some((s) =>
+    refChildren.some((c) => s.father_id === c.id || s.mother_id === c.id)
+  );
+  if (isGrandchildSpouse) return "Cucu Menantu";
+
+  const childSpouses = refChildren
+    .flatMap((c) => getSpouseIds(c.id))
+    .map((id) => personMap.get(id))
+    .filter(Boolean) as Person[];
+  if (childSpouses.some((s) => s.father_id === target.id || s.mother_id === target.id)) return "Besan";
 
   const refSpouseIds = getSpouseIds(ref.id);
   for (const spId of refSpouseIds) {
