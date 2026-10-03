@@ -11,7 +11,8 @@ export function generateTreeLayout(
   persons: Person[],
   marriages: Marriage[],
   referenceUserId: string,
-  onSelectPerson: (person: Person) => void
+  onSelectPerson: (person: Person) => void,
+  nodePositions: Record<string, { x: number; y: number }> = {}
 ): LayoutResult {
   const personMap = new Map<string, Person>(persons.map((p) => [p.id, p]));
   const depthMap = new Map<string, number>();
@@ -82,14 +83,14 @@ export function generateTreeLayout(
   const nodes: Node[] = [];
   const HORIZONTAL_GAP = 300;
   const VERTICAL_GAP = 230;
+  const missingPositionCount = persons.filter((p) => !nodePositions[p.id]).length;
+  const centerNewPosition = missingPositionCount === 1 && Object.keys(nodePositions).length > 0;
 
   for (const depth of sortedDepths) {
     const list = levels.get(depth)!;
 
     const processed = new Set<string>();
     const orderedList: Person[] = [];
-
-    list.sort((a, b) => (a.birth_order || 0) - (b.birth_order || 0));
 
     for (const p of list) {
       if (processed.has(p.id)) continue;
@@ -110,14 +111,15 @@ export function generateTreeLayout(
     const startX = Math.max(80, 700 - totalWidth / 2);
 
     orderedList.forEach((person, index) => {
-      const x = startX + index * HORIZONTAL_GAP;
-      const y = 80 + depth * VERTICAL_GAP;
+      const position = nodePositions[person.id] || (centerNewPosition
+        ? { x: 700 - HORIZONTAL_GAP / 2, y: 80 + depth * VERTICAL_GAP }
+        : { x: startX + index * HORIZONTAL_GAP, y: 80 + depth * VERTICAL_GAP });
       const kinshipTitle = getKinshipTitle(person.id, referenceUserId, persons, marriages);
 
       nodes.push({
         id: person.id,
         type: "familyMember",
-        position: { x, y },
+        position,
         data: {
           person,
           kinshipTitle,
@@ -156,7 +158,7 @@ export function generateTreeLayout(
       });
     }
 
-    if (person.father_id && person.mother_id && personMap.has(person.mother_id) && !marriages.some(m => (m.husband_id === person.father_id && m.wife_id === person.mother_id) || (m.husband_id === person.mother_id && m.wife_id === person.father_id))) {
+    if (person.father_id && person.mother_id && personMap.has(person.mother_id)) {
       edges.push({
         id: `edge-mother-${person.mother_id}-${person.id}`,
         source: person.mother_id,

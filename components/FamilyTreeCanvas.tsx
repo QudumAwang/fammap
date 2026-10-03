@@ -8,6 +8,7 @@ import {
   useNodesState,
   useEdgesState,
   BackgroundVariant,
+  NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "@/styles/claymorphism.css";
@@ -37,6 +38,26 @@ const edgeTypes = {
 };
 
 type RelationLink = { id: string; key: "father_id" | "mother_id"; value: string };
+type NodePosition = { x: number; y: number };
+
+async function saveNodePositions(positions: { personId: string; position: NodePosition }[]) {
+  if (positions.length === 0) return;
+  try {
+    await fetch("/api/person-positions", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        positions: positions.map(({ personId, position }) => ({
+          person_id: personId,
+          x: position.x,
+          y: position.y,
+        })),
+      }),
+    });
+  } catch {
+    return;
+  }
+}
 
 async function syncRelations(persons: Person[], marriages: Marriage[]) {
   const headers = { "Content-Type": "application/json" };
@@ -92,10 +113,15 @@ export function FamilyTreeCanvas() {
   const [marriages, setMarriages] = useState<Marriage[]>([]);
   const [referenceUserId, setReferenceUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
 
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isAddRootOpen, setIsAddRootOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSelectPerson = useCallback((person: Person) => {
+    setSelectedPerson(person);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -103,13 +129,15 @@ export function FamilyTreeCanvas() {
     async function fetchData() {
       setIsLoading(true);
       try {
-        const [pRes, mRes] = await Promise.all([
+        const [pRes, mRes, positionRes] = await Promise.all([
           fetch("/api/persons"),
           fetch("/api/marriages"),
+          fetch("/api/person-positions"),
         ]);
 
         const personsData = await pRes.json();
         const marriagesData = await mRes.json();
+        const positionsData = await positionRes.json();
 
         if (!pRes.ok || personsData.error) {
           console.error("fetchData (persons):", personsData.error || pRes.statusText);
@@ -117,21 +145,43 @@ export function FamilyTreeCanvas() {
         if (!mRes.ok || marriagesData.error) {
           console.error("fetchData (marriages):", marriagesData.error || mRes.statusText);
         }
+        if (!positionRes.ok || positionsData.error) {
+          console.error("fetchData (positions):", positionsData.error || positionRes.statusText);
+        }
 
         if (!isMounted) return;
 
-        if (Array.isArray(personsData) && personsData.length > 0) {
-          const loadedPersons: Person[] = personsData.map((p) => ({
-            id: p.id,
-            full_name: p.full_name,
-            gender: p.gender,
-            birth_date: p.birth_date,
-            birth_order: p.birth_order,
-            life_status: p.life_status,
-            father_id: p.father_id,
-            mother_id: p.mother_id,
-            child_status: p.child_status,
-          }));
+        const loadedPositions: Record<string, NodePosition> = Array.isArray(positionsData)
+          ? Object.fromEntries(
+              positionsData.map((p) => [p.person_id, { x: p.x, y: p.y }])
+            )
+          : {};
+        setNodePositions(loadedPositions);
+
+        const loadedPersons: Person[] = Array.isArray(personsData)
+          ? personsData.map((p) => ({
+              id: p.id,
+              full_name: p.full_name,
+              gender: p.gender,
+              birth_date: p.birth_date,
+              birth_order: p.birth_order,
+              life_status: p.life_status,
+              father_id: p.father_id,
+              mother_id: p.mother_id,
+              child_status: p.child_status,
+            }))
+          : [];
+        const loadedMarriages: Marriage[] = Array.isArray(marriagesData)
+          ? marriagesData.map((m) => ({
+              id: m.id,
+              husband_id: m.husband_id,
+              wife_id: m.wife_id,
+              marriage_order: m.marriage_order,
+              status: m.status,
+            }))
+          : [];
+
+        if (loadedPersons.length > 0) {
           setPersons(loadedPersons);
 
           setReferenceUserId((prev) => {
@@ -140,31 +190,41 @@ export function FamilyTreeCanvas() {
           });
         }
 
-        if (Array.isArray(marriagesData) && marriagesData.length > 0) {
-          const loadedMarriages: Marriage[] = marriagesData.map((m) => ({
-            id: m.id,
-            husband_id: m.husband_id,
-            wife_id: m.wife_id,
-            marriage_order: m.marriage_order,
-            status: m.status,
-          }));
+        if (loadedMarriages.length > 0) {
           setMarriages(loadedMarriages);
         }
 
         if (Array.isArray(personsData) && Array.isArray(marriagesData)) {
           const { links, newMarriages } = await syncRelations(personsData, marriagesData);
           if (!isMounted) return;
+          const syncedPersons = loadedPersons.map((p) => {
+            const link = links.find((l) => l.id === p.id);
+            return link ? { ...p, [link.key]: link.value } : p;
+          });
+          const syncedMarriages = [...loadedMarriages, ...newMarriages];
           if (links.length > 0) {
-            setPersons((prev) =>
-              prev.map((p) => {
-                const link = links.find((l) => l.id === p.id);
-                return link ? { ...p, [link.key]: link.value } : p;
-              })
-            );
+            setPersons(syncedPersons);
           }
           if (newMarriages.length > 0) {
-            setMarriages((prev) => [...prev, ...newMarriages]);
+            setMarriages(syncedMarriages);
           }
+
+          const initialLayout = generateTreeLayout(
+            syncedPersons,
+            syncedMarriages,
+            syncedPersons[0]?.id || "",
+            handleSelectPerson,
+            loadedPositions
+          );
+          const completePositions = Object.fromEntries(
+            initialLayout.nodes.map((node) => [node.id, node.position])
+          );
+          setNodePositions(completePositions);
+          await saveNodePositions(
+            initialLayout.nodes
+              .filter((node) => !loadedPositions[node.id])
+              .map((node) => ({ personId: node.id, position: node.position }))
+          );
         }
       } catch (err) {
         console.error("fetchData:", err instanceof Error ? err.message : err);
@@ -180,23 +240,67 @@ export function FamilyTreeCanvas() {
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  const handleSelectPerson = useCallback((person: Person) => {
-    setSelectedPerson(person);
-  }, []);
+  }, [handleSelectPerson]);
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
-    return generateTreeLayout(persons, marriages, referenceUserId, handleSelectPerson);
-  }, [persons, marriages, referenceUserId, handleSelectPerson]);
+    return generateTreeLayout(persons, marriages, referenceUserId, handleSelectPerson, nodePositions);
+  }, [persons, marriages, referenceUserId, handleSelectPerson, nodePositions]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
+
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    const positionChanges = changes.filter(
+      (change): change is Extract<NodeChange, { type: "position" }> =>
+        change.type === "position" && Boolean(change.position) && change.dragging !== true
+    );
+    if (positionChanges.length > 0) {
+      setNodePositions((prev) => {
+        const next = { ...prev };
+        for (const node of nodes) {
+          next[node.id] = node.position;
+        }
+        for (const change of positionChanges) {
+          next[change.id] = change.position!;
+        }
+        return next;
+      });
+      void saveNodePositions(
+        positionChanges.map((change) => ({
+          personId: change.id,
+          position: change.position!,
+        }))
+      );
+    }
+    onNodesChange(changes);
+  }, [nodes, onNodesChange]);
+
+  const rememberCurrentPositions = useCallback(() => {
+    setNodePositions((prev) => {
+      let next = prev;
+      for (const node of nodes) {
+        if (!next[node.id]) {
+          if (next === prev) next = { ...prev };
+          next[node.id] = node.position;
+        }
+      }
+      return next;
+    });
+  }, [nodes]);
 
   React.useEffect(() => {
     setNodes(layoutNodes);
     setEdges(layoutEdges);
   }, [layoutNodes, layoutEdges, setNodes, setEdges]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const unsavedNodes = layoutNodes.filter((node) => !nodePositions[node.id]);
+    if (unsavedNodes.length === 0) return;
+    void saveNodePositions(
+      unsavedNodes.map((node) => ({ personId: node.id, position: node.position }))
+    );
+  }, [isLoading, layoutNodes, nodePositions]);
 
   const handleSetReferenceUser = (id: string) => {
     setReferenceUserId(id);
@@ -223,6 +327,7 @@ export function FamilyTreeCanvas() {
   };
 
   const handleUpdatePerson = async (updated: Person) => {
+    rememberCurrentPositions();
     const previousPerson = persons.find((p) => p.id === updated.id) || selectedPerson;
     setPersons((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     setSelectedPerson(updated);
@@ -272,6 +377,12 @@ export function FamilyTreeCanvas() {
     setMarriages((prev) =>
       prev.filter((m) => m.husband_id !== id && m.wife_id !== id)
     );
+    setNodePositions((prev) => {
+      if (!prev[id]) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
     if (referenceUserId === id) {
       const remaining = persons.filter((p) => p.id !== id);
       if (remaining.length > 0) {
@@ -292,6 +403,7 @@ export function FamilyTreeCanvas() {
   };
 
   const handleAddChild = async (parent: Person, childData: Omit<Person, "id">) => {
+    rememberCurrentPositions();
     try {
       const res = await fetch("/api/persons", {
         method: "POST",
@@ -328,6 +440,7 @@ export function FamilyTreeCanvas() {
     partnerData: Omit<Person, "id">,
     status: MarriageStatus
   ) => {
+    rememberCurrentPositions();
     try {
       const pRes = await fetch("/api/persons", {
         method: "POST",
@@ -412,6 +525,7 @@ export function FamilyTreeCanvas() {
     parentData: Omit<Person, "id">,
     relationType: "father" | "mother"
   ) => {
+    rememberCurrentPositions();
     try {
       const res = await fetch("/api/persons", {
         method: "POST",
@@ -466,6 +580,7 @@ export function FamilyTreeCanvas() {
   };
 
   const handleAddRootMember = async (memberData: Omit<Person, "id">) => {
+    rememberCurrentPositions();
     try {
       const res = await fetch("/api/persons", {
         method: "POST",
@@ -604,7 +719,7 @@ export function FamilyTreeCanvas() {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
