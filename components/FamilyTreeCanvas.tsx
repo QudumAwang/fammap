@@ -9,6 +9,7 @@ import {
   useEdgesState,
   BackgroundVariant,
   NodeChange,
+  SelectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "@/styles/claymorphism.css";
@@ -723,6 +724,10 @@ export function FamilyTreeCanvas() {
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          selectionOnDrag
+          selectionKeyCode={["Shift", "Meta", "Control"]}
+          multiSelectionKeyCode={["Shift", "Meta", "Control"]}
+          selectionMode={SelectionMode.Partial}
           fitView
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.2}

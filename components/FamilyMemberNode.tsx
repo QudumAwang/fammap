@@ -12,7 +12,7 @@ export interface FamilyNodeData {
   onSelect: (person: Person) => void;
 }
 
-function FamilyMemberNodeComponent({ data, selected }: NodeProps) {
+function FamilyMemberNodeComponent({ data, selected, dragging }: NodeProps) {
   const nodeData = data as unknown as FamilyNodeData;
   const { person, kinshipTitle, isReference, onSelect } = nodeData;
 
@@ -26,7 +26,7 @@ function FamilyMemberNodeComponent({ data, selected }: NodeProps) {
         isReference
           ? "ring-2 ring-indigo-400/80 shadow-[0_0_20px_rgba(99,102,241,0.25)]"
           : ""
-      } ${selected ? "scale-105" : "hover:scale-[1.02]"}`}
+      } ${selected ? "scale-105 ring-2 ring-indigo-500/80 shadow-[0_0_24px_rgba(99,102,241,0.35)]" : "hover:scale-[1.02]"} ${dragging ? "z-10" : ""}`}
     >
       <Handle
         type="target"
