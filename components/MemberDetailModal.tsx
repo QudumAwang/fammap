@@ -14,6 +14,7 @@ import {
   Check,
   ShieldAlert,
 } from "lucide-react";
+import { SearchableSelect, SearchableSelectOption } from "./SearchableSelect";
 
 interface MemberDetailModalProps {
   isOpen: boolean;
@@ -32,6 +33,20 @@ interface MemberDetailModalProps {
 }
 
 type ModalView = "view" | "edit" | "add_child" | "add_partner" | "add_parent" | "confirm_delete";
+
+const genderOptions: SearchableSelectOption[] = [
+  { value: "male", label: "Laki-laki" },
+  { value: "female", label: "Perempuan" },
+];
+const lifeStatusOptions: SearchableSelectOption[] = [
+  { value: "alive", label: "Masih Hidup" },
+  { value: "deceased", label: "Wafat" },
+];
+const childStatusOptions: SearchableSelectOption[] = [
+  { value: "biological", label: "Kandung" },
+  { value: "adopted", label: "Adopsi" },
+  { value: "step", label: "Tiri" },
+];
 
 export function MemberDetailModal({
   isOpen,
@@ -366,14 +381,12 @@ function EditMemberForm({
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Jenis Kelamin
           </label>
-          <select
+          <SearchableSelect
             value={gender}
-            onChange={(e) => setGender(e.target.value as Gender)}
+            onChange={(value) => setGender(value as Gender)}
+            options={genderOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="male">Laki-laki</option>
-            <option value="female">Perempuan</option>
-          </select>
+          />
         </div>
 
         <div>
@@ -395,67 +408,56 @@ function EditMemberForm({
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Status Hidup
           </label>
-          <select
+          <SearchableSelect
             value={lifeStatus}
-            onChange={(e) => setLifeStatus(e.target.value as LifeStatus)}
+            onChange={(value) => setLifeStatus(value as LifeStatus)}
+            options={lifeStatusOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="alive">Masih Hidup</option>
-            <option value="deceased">Wafat</option>
-          </select>
+          />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Status Anak
           </label>
-          <select
+          <SearchableSelect
             value={childStatus}
-            onChange={(e) => setChildStatus(e.target.value as ChildStatus)}
+            onChange={(value) => setChildStatus(value as ChildStatus)}
+            options={childStatusOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="biological">Kandung</option>
-            <option value="adopted">Adopsi</option>
-            <option value="step">Tiri</option>
-          </select>
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">Ayah</label>
-          <select
+          <SearchableSelect
             value={fatherId}
-            onChange={(e) => setFatherId(e.target.value)}
+            onChange={setFatherId}
+            options={[
+              { value: "", label: "- Tidak Ada -" },
+              ...persons
+                .filter((p) => p.gender === "male" && p.id !== person.id)
+                .map((p) => ({ value: p.id, label: p.full_name })),
+            ]}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="">- Tidak Ada -</option>
-            {persons
-              .filter((p) => p.gender === "male" && p.id !== person.id)
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name}
-                </option>
-              ))}
-          </select>
+          />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">Ibu</label>
-          <select
+          <SearchableSelect
             value={motherId}
-            onChange={(e) => setMotherId(e.target.value)}
+            onChange={setMotherId}
+            options={[
+              { value: "", label: "- Tidak Ada -" },
+              ...persons
+                .filter((p) => p.gender === "female" && p.id !== person.id)
+                .map((p) => ({ value: p.id, label: p.full_name })),
+            ]}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="">- Tidak Ada -</option>
-            {persons
-              .filter((p) => p.gender === "female" && p.id !== person.id)
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name}
-                </option>
-              ))}
-          </select>
+          />
         </div>
       </div>
 
@@ -540,14 +542,12 @@ function AddChildForm({
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Jenis Kelamin
           </label>
-          <select
+          <SearchableSelect
             value={gender}
-            onChange={(e) => setGender(e.target.value as Gender)}
+            onChange={(value) => setGender(value as Gender)}
+            options={genderOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="male">Laki-laki</option>
-            <option value="female">Perempuan</option>
-          </select>
+          />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">
@@ -568,28 +568,23 @@ function AddChildForm({
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Status Hidup
           </label>
-          <select
+          <SearchableSelect
             value={lifeStatus}
-            onChange={(e) => setLifeStatus(e.target.value as LifeStatus)}
+            onChange={(value) => setLifeStatus(value as LifeStatus)}
+            options={lifeStatusOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="alive">Masih Hidup</option>
-            <option value="deceased">Wafat</option>
-          </select>
+          />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Status Anak
           </label>
-          <select
+          <SearchableSelect
             value={childStatus}
-            onChange={(e) => setChildStatus(e.target.value as ChildStatus)}
+            onChange={(value) => setChildStatus(value as ChildStatus)}
+            options={childStatusOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="biological">Kandung</option>
-            <option value="adopted">Adopsi</option>
-            <option value="step">Tiri</option>
-          </select>
+          />
         </div>
       </div>
 
@@ -693,14 +688,12 @@ function AddPartnerForm({
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Status Hidup
           </label>
-          <select
+          <SearchableSelect
             value={lifeStatus}
-            onChange={(e) => setLifeStatus(e.target.value as LifeStatus)}
+            onChange={(value) => setLifeStatus(value as LifeStatus)}
+            options={lifeStatusOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="alive">Masih Hidup</option>
-            <option value="deceased">Wafat</option>
-          </select>
+          />
         </div>
       </div>
 
@@ -766,18 +759,23 @@ function AddParentForm({
         <label className="block text-xs font-semibold text-slate-600 mb-1">
           Sebagai
         </label>
-        <select
+        <SearchableSelect
           value={parentType}
-          onChange={(e) => setParentType(e.target.value as "father" | "mother")}
+          onChange={(value) => setParentType(value as "father" | "mother")}
+          options={[
+            {
+              value: "father",
+              label: `Ayah ${child.father_id ? "(Sudah Ada)" : ""}`,
+              disabled: Boolean(child.father_id),
+            },
+            {
+              value: "mother",
+              label: `Ibu ${child.mother_id ? "(Sudah Ada)" : ""}`,
+              disabled: Boolean(child.mother_id),
+            },
+          ]}
           className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-        >
-          <option value="father" disabled={Boolean(child.father_id)}>
-            Ayah {child.father_id ? "(Sudah Ada)" : ""}
-          </option>
-          <option value="mother" disabled={Boolean(child.mother_id)}>
-            Ibu {child.mother_id ? "(Sudah Ada)" : ""}
-          </option>
-        </select>
+        />
       </div>
 
       <div>
@@ -811,14 +809,12 @@ function AddParentForm({
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Status Hidup
           </label>
-          <select
+          <SearchableSelect
             value={lifeStatus}
-            onChange={(e) => setLifeStatus(e.target.value as LifeStatus)}
+            onChange={(value) => setLifeStatus(value as LifeStatus)}
+            options={lifeStatusOptions}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-          >
-            <option value="alive">Masih Hidup</option>
-            <option value="deceased">Wafat</option>
-          </select>
+          />
         </div>
       </div>
 

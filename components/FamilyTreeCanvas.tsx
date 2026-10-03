@@ -21,7 +21,9 @@ import { FamilyMemberNode } from "./FamilyMemberNode";
 import { MarriageEdge } from "./MarriageEdge";
 import { MemberDetailModal } from "./MemberDetailModal";
 import { AddRootMemberModal } from "./AddRootMemberModal";
+import { SearchableSelect } from "./SearchableSelect";
 import {
+  Grid3X3,
   Search,
   UserPlus,
   Crown,
@@ -37,6 +39,9 @@ const nodeTypes = {
 const edgeTypes = {
   marriage: MarriageEdge,
 };
+
+const GRID_SIZE = 40;
+const SNAP_GRID: [number, number] = [GRID_SIZE, GRID_SIZE];
 
 type RelationLink = { id: string; key: "father_id" | "mother_id"; value: string };
 type NodePosition = { x: number; y: number };
@@ -119,6 +124,7 @@ export function FamilyTreeCanvas() {
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isAddRootOpen, setIsAddRootOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isGridMode, setIsGridMode] = useState(false);
 
   const handleSelectPerson = useCallback((person: Person) => {
     setSelectedPerson(person);
@@ -649,17 +655,15 @@ export function FamilyTreeCanvas() {
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl clay-badge text-xs">
               <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
               <span className="text-slate-500 font-medium">Acuan (&quot;Saya&quot;):</span>
-              <select
+              <SearchableSelect
                 value={referenceUserId}
-                onChange={(e) => setReferenceUserId(e.target.value)}
-                className="bg-transparent font-bold text-indigo-700 outline-none cursor-pointer"
-              >
-                {persons.map((p) => (
-                  <option key={p.id} value={p.id} className="text-slate-800">
-                    {p.full_name} ({p.gender === "male" ? "L" : "P"})
-                  </option>
-                ))}
-              </select>
+                onChange={setReferenceUserId}
+                options={persons.map((p) => ({
+                  value: p.id,
+                  label: `${p.full_name} (${p.gender === "male" ? "L" : "P"})`,
+                }))}
+                className="w-40 bg-transparent font-bold text-indigo-700 outline-none cursor-pointer text-xs"
+              />
             </div>
           )}
 
@@ -704,6 +708,18 @@ export function FamilyTreeCanvas() {
             <span>Tambah Leluhur</span>
           </button>
 
+          <button
+            type="button"
+            aria-pressed={isGridMode}
+            onClick={() => setIsGridMode((prev) => !prev)}
+            className={`py-2 px-3.5 text-xs font-semibold flex items-center gap-1.5 ${
+              isGridMode ? "clay-button-primary" : "clay-button"
+            }`}
+          >
+            <Grid3X3 className="w-3.5 h-3.5" />
+            <span>{isGridMode ? "Grid Aktif" : "Mode Grid"}</span>
+          </button>
+
         </div>
       </header>
 
@@ -724,6 +740,8 @@ export function FamilyTreeCanvas() {
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          snapToGrid={isGridMode}
+          snapGrid={SNAP_GRID}
           selectionOnDrag
           selectionKeyCode={["Shift", "Meta", "Control"]}
           multiSelectionKeyCode={["Shift", "Meta", "Control"]}
@@ -734,7 +752,12 @@ export function FamilyTreeCanvas() {
           maxZoom={1.5}
           attributionPosition="bottom-right"
         >
-          <Background color="#cbd5e1" gap={24} size={1.5} variant={BackgroundVariant.Dots} />
+          <Background
+            color={isGridMode ? "#94a3b8" : "#cbd5e1"}
+            gap={isGridMode ? GRID_SIZE : 24}
+            size={isGridMode ? 1 : 1.5}
+            variant={isGridMode ? BackgroundVariant.Lines : BackgroundVariant.Dots}
+          />
           <Controls
             className="!m-4 !border-none !rounded-2xl !bg-[#e0e5ec] !shadow-[8px_8px_16px_rgba(0,0,0,0.1),inset_-6px_-6px_12px_rgba(0,0,0,0.1),inset_6px_6px_12px_rgba(255,255,255,0.8)] !p-1.5"
           />

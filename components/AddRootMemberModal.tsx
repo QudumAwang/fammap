@@ -3,6 +3,21 @@
 import React, { useState } from "react";
 import { Person, Gender, LifeStatus, ChildStatus } from "@/types/family";
 import { X, UserPlus } from "lucide-react";
+import { SearchableSelect, SearchableSelectOption } from "./SearchableSelect";
+
+const genderOptions: SearchableSelectOption[] = [
+  { value: "male", label: "Laki-laki" },
+  { value: "female", label: "Perempuan" },
+];
+const lifeStatusOptions: SearchableSelectOption[] = [
+  { value: "alive", label: "Masih Hidup" },
+  { value: "deceased", label: "Wafat" },
+];
+const childStatusOptions: SearchableSelectOption[] = [
+  { value: "biological", label: "Kandung" },
+  { value: "adopted", label: "Adopsi" },
+  { value: "step", label: "Tiri" },
+];
 
 interface AddRootMemberModalProps {
   isOpen: boolean;
@@ -77,14 +92,12 @@ export function AddRootMemberModal({
               <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Jenis Kelamin
               </label>
-              <select
+              <SearchableSelect
                 value={gender}
-                onChange={(e) => setGender(e.target.value as Gender)}
+                onChange={(value) => setGender(value as Gender)}
+                options={genderOptions}
                 className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-              >
-                <option value="male">Laki-laki</option>
-                <option value="female">Perempuan</option>
-              </select>
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
@@ -105,28 +118,23 @@ export function AddRootMemberModal({
               <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Status Hidup
               </label>
-              <select
+              <SearchableSelect
                 value={lifeStatus}
-                onChange={(e) => setLifeStatus(e.target.value as LifeStatus)}
+                onChange={(value) => setLifeStatus(value as LifeStatus)}
+                options={lifeStatusOptions}
                 className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-              >
-                <option value="alive">Masih Hidup</option>
-                <option value="deceased">Wafat</option>
-              </select>
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Status Anak
               </label>
-              <select
+              <SearchableSelect
                 value={childStatus}
-                onChange={(e) => setChildStatus(e.target.value as ChildStatus)}
+                onChange={(value) => setChildStatus(value as ChildStatus)}
+                options={childStatusOptions}
                 className="w-full px-3 py-2 text-xs clay-input text-slate-800"
-              >
-                <option value="biological">Kandung</option>
-                <option value="adopted">Adopsi</option>
-                <option value="step">Tiri</option>
-              </select>
+              />
             </div>
           </div>
 
