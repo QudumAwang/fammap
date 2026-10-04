@@ -1,5 +1,23 @@
 import { Marriage, Person } from "@/types/family";
 
+export function getBirthOrderLabel(person: Person, persons: Person[]): string {
+  const getRank = (parentId: string | null): number | null => {
+    if (!parentId) return null;
+    const siblings = persons
+      .filter((p) => p.father_id === parentId || p.mother_id === parentId)
+      .sort((a, b) => a.birth_order - b.birth_order);
+    const rank = siblings.findIndex((p) => p.id === person.id);
+    return rank >= 0 ? rank + 1 : null;
+  };
+
+  const fatherRank = getRank(person.father_id);
+  const motherRank = getRank(person.mother_id);
+  if (fatherRank && motherRank && fatherRank !== motherRank) {
+    return `Anak ke-${fatherRank} (ayah), ke-${motherRank} (ibu)`;
+  }
+  return `Anak ke-${fatherRank || motherRank || person.birth_order}`;
+}
+
 export function getKinshipTitle(
   personId: string,
   referenceId: string,
@@ -28,6 +46,19 @@ export function getKinshipTitle(
     return Boolean(sameFather || sameMother);
   };
 
+  const getSiblingOrder = (person: Person, sibling: Person): number => {
+    const parentId = [person.father_id, person.mother_id].find(
+      (id) => id && (id === sibling.father_id || id === sibling.mother_id)
+    );
+    if (!parentId) return person.birth_order;
+
+    const siblings = persons
+      .filter((p) => p.father_id === parentId || p.mother_id === parentId)
+      .sort((a, b) => a.birth_order - b.birth_order);
+    const rank = siblings.findIndex((p) => p.id === person.id);
+    return rank >= 0 ? rank + 1 : person.birth_order;
+  };
+
   if (getSpouseIds(ref.id).includes(target.id)) {
     return target.gender === "male" ? "Suami" : "Istri";
   }
@@ -38,7 +69,18 @@ export function getKinshipTitle(
   const father = ref.father_id ? personMap.get(ref.father_id) : undefined;
   const mother = ref.mother_id ? personMap.get(ref.mother_id) : undefined;
 
-  if ([father, mother].some((p) => p && getSpouseIds(p.id).includes(target.id))) {
+  const refParentIds = [ref.father_id, ref.mother_id].filter(
+    (id): id is string => Boolean(id)
+  );
+  if (
+    [father, mother].some(
+      (p) =>
+        p &&
+        getSpouseIds(p.id).some(
+          (spouseId) => spouseId === target.id && !refParentIds.includes(spouseId)
+        )
+    )
+  ) {
     return target.gender === "male" ? "Ayah Tiri" : "Ibu Tiri";
   }
 
@@ -72,19 +114,37 @@ export function getKinshipTitle(
   }
   if ([...grandfathers, ...grandmothers].some((gp) => areSiblings(target, gp))) return "Mbah";
 
+  const sameFather = Boolean(
+    target.father_id && ref.father_id && target.father_id === ref.father_id
+  );
+  const sameMother = Boolean(
+    target.mother_id && ref.mother_id && target.mother_id === ref.mother_id
+  );
+  const isHalfSibling =
+    (sameFather && Boolean(target.mother_id && ref.mother_id && target.mother_id !== ref.mother_id)) ||
+    (sameMother && Boolean(target.father_id && ref.father_id && target.father_id !== ref.father_id));
+  const targetParentIds = [target.father_id, target.mother_id].filter(
+    (id): id is string => Boolean(id)
+  );
+  const isStepParentSibling = refParentIds.some((parentId) =>
+    getSpouseIds(parentId).some(
+      (spouseId) => targetParentIds.includes(spouseId) && !refParentIds.includes(spouseId)
+    )
+  );
   const isStepSibling =
-    ((target.child_status === "step" || ref.child_status === "step") &&
-      areSiblings(target, ref)) ||
-    [father, mother].some(
-      (p) => p && getSpouseIds(p.id).some((sid) => target.father_id === sid || target.mother_id === sid)
-    );
+    target.child_status === "step" ||
+    ref.child_status === "step" ||
+    isHalfSibling ||
+    isStepParentSibling;
   if (isStepSibling) return "Saudara Tiri";
 
   if (areSiblings(target, ref)) {
-    if (target.birth_order < ref.birth_order) {
+    const targetOrder = getSiblingOrder(target, ref);
+    const refOrder = getSiblingOrder(ref, target);
+    if (targetOrder < refOrder) {
       return target.gender === "male" ? "Kakak (Mas)" : "Kakak (Mbak)";
     }
-    if (target.birth_order > ref.birth_order) {
+    if (targetOrder > refOrder) {
       return target.gender === "male" ? "Adik Laki-laki" : "Adik Perempuan";
     }
     return target.gender === "male" ? "Saudara Laki-laki" : "Saudara Perempuan";
@@ -104,7 +164,7 @@ export function getKinshipTitle(
   if (isGrandchild) return "Cucu";
 
   const getUncleAuntTitle = (sibling: Person, parent: Person): string => {
-    const isOlder = sibling.birth_order < parent.birth_order;
+    const isOlder = getSiblingOrder(sibling, parent) < getSiblingOrder(parent, sibling);
     if (isOlder) {
       return sibling.gender === "male" ? "Pakdhe" : "Budhe";
     }

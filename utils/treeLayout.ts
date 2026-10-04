@@ -1,6 +1,6 @@
 import { Marriage, Person } from "@/types/family";
 import { Edge, Node } from "@xyflow/react";
-import { getKinshipTitle } from "./kinship";
+import { getBirthOrderLabel, getKinshipTitle } from "./kinship";
 
 interface LayoutResult {
   nodes: Node[];
@@ -122,6 +122,7 @@ export function generateTreeLayout(
         position,
         data: {
           person,
+          birthOrderLabel: getBirthOrderLabel(person, persons),
           kinshipTitle,
           isReference: person.id === referenceUserId,
           onSelect: onSelectPerson,

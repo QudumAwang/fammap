@@ -7,6 +7,7 @@ import { User, Crown } from "lucide-react";
 
 export interface FamilyNodeData {
   person: Person;
+  birthOrderLabel: string;
   kinshipTitle: string;
   isReference: boolean;
   onSelect: (person: Person) => void;
@@ -14,7 +15,7 @@ export interface FamilyNodeData {
 
 function FamilyMemberNodeComponent({ data, selected, dragging }: NodeProps) {
   const nodeData = data as unknown as FamilyNodeData;
-  const { person, kinshipTitle, isReference, onSelect } = nodeData;
+  const { person, birthOrderLabel, kinshipTitle, isReference, onSelect } = nodeData;
 
   const isMale = person.gender === "male";
   const isDeceased = person.life_status === "deceased";
@@ -94,7 +95,7 @@ function FamilyMemberNodeComponent({ data, selected, dragging }: NodeProps) {
             {person.full_name}
           </h3>
           <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-            <span>Anak ke-{person.birth_order}</span>
+            <span>{birthOrderLabel}</span>
             <span>•</span>
             <span className="capitalize">{person.gender === "male" ? "Laki-laki" : "Perempuan"}</span>
           </p>

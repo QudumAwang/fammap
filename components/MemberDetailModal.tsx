@@ -15,6 +15,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { SearchableSelect, SearchableSelectOption } from "./SearchableSelect";
+import { getBirthOrderLabel } from "@/utils/kinship";
 
 interface MemberDetailModalProps {
   isOpen: boolean;
@@ -81,6 +82,11 @@ export function MemberDetailModal({
   const children = persons.filter(
     (p) => p.father_id === person.id || p.mother_id === person.id
   );
+  const orderParentId = person.gender === "male" ? person.id : spouses[0]?.id || person.id;
+  const suggestedBirthOrder =
+    persons
+      .filter((p) => p.father_id === orderParentId || p.mother_id === orderParentId)
+      .reduce((max, p) => Math.max(max, p.birth_order), 0) + 1;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-sm animate-fadeIn">
@@ -128,7 +134,7 @@ export function MemberDetailModal({
                   <p className="text-xs text-slate-500 flex items-center gap-2 mt-1">
                     <span>{person.gender === "male" ? "Laki-laki" : "Perempuan"}</span>
                     <span>•</span>
-                    <span>Anak ke-{person.birth_order}</span>
+                    <span>{getBirthOrderLabel(person, persons)}</span>
                     <span>•</span>
                     <span
                       className={`font-medium ${
@@ -192,7 +198,7 @@ export function MemberDetailModal({
                         className="flex items-center justify-between p-2 rounded-lg clay-badge text-slate-700"
                       >
                         <span className="font-medium">{c.full_name}</span>
-                        <span className="text-[10px] text-slate-400">Anak ke-{c.birth_order}</span>
+                        <span className="text-[10px] text-slate-400">{getBirthOrderLabel(c, persons)}</span>
                       </div>
                     ))}
                   </div>
@@ -261,7 +267,7 @@ export function MemberDetailModal({
             <AddChildForm
               parent={person}
               spouses={spouses}
-              suggestedBirthOrder={children.length + 1}
+              suggestedBirthOrder={suggestedBirthOrder}
               onSave={(childData) => {
                 onAddChild(person, childData);
                 setView("view");
