@@ -1,45 +1,45 @@
 # FamMap
 
-FamMap adalah aplikasi interaktif untuk mengelola silsilah keluarga, memetakan hubungan kekerabatan, dan menyusun profil keluarga dalam canvas visual.
+FamMap is an interactive family-tree application for managing family profiles, visualizing relationships, and organizing family data on a canvas.
 
-## Fitur
+## Features
 
-- Login menggunakan Supabase Auth.
-- Canvas silsilah interaktif berbasis React Flow.
-- Relasi ayah, ibu, anak, pasangan, dan pernikahan.
-- Perhitungan panggilan kekerabatan dalam bahasa Indonesia.
-- Tambah, edit, hapus, dan cari profil keluarga.
-- Pemilihan banyak profil dengan Shift atau Ctrl/Cmd.
-- Mode Grid untuk merapikan posisi profil.
-- Posisi profil tersimpan di Supabase.
-- Antarmuka claymorphism yang responsif.
+- Supabase Auth login.
+- Interactive family tree canvas powered by React Flow.
+- Parent, child, partner, and marriage relationships.
+- Indonesian kinship title calculation.
+- Add, edit, delete, and search family profiles.
+- Multi-select profiles with Shift or Ctrl/Cmd.
+- Grid mode for aligning profiles.
+- Automatic profile position persistence in Supabase.
+- Responsive claymorphism interface.
 
-## Teknologi
+## Tech Stack
 
-- Next.js 16 dengan App Router
-- React 19 dan TypeScript
-- Supabase Auth dan database PostgreSQL
+- Next.js 16 with App Router
+- React 19 and TypeScript
+- Supabase Auth and PostgreSQL
 - React Flow
 - Tailwind CSS
-- Framer Motion dan Lucide React
+- Framer Motion and Lucide React
 
-## Persiapan
+## Setup
 
-Pastikan Node.js 20 atau versi yang lebih baru sudah terpasang.
+Node.js 20 or newer is required.
 
-1. Clone repository dan masuk ke folder proyek.
+1. Clone the repository and open the project directory.
 
 ```bash
-git clone <url-repository> fammap-dumci
+git clone <repository-url> fammap-dumci
 cd fammap-dumci
 npm install
 ```
 
-2. Buat project Supabase, lalu jalankan seluruh isi [`supabase_init.sql`](./supabase_init.sql) melalui SQL Editor Supabase.
+2. Create a Supabase project and run [`supabase_init.sql`](./supabase_init.sql) in the Supabase SQL Editor.
 
-3. Aktifkan Email provider pada Supabase Auth dan buat akun pengguna untuk login.
+3. Enable the Email provider in Supabase Auth and create a user account.
 
-4. Buat file `.env.local` pada root proyek:
+4. Create `.env.local` in the project root:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -48,19 +48,19 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY` hanya digunakan di server dan tidak boleh dikirim ke client atau di-commit ke repository.
+Keep `SUPABASE_SERVICE_ROLE_KEY` server-side. Never expose or commit it.
 
-## Menjalankan
+## Run the Project
 
-Mode development:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Buka [http://localhost:3000](http://localhost:3000), kemudian login menggunakan akun Supabase.
+Open [http://localhost:3000](http://localhost:3000) and sign in with your Supabase account.
 
-Validasi production:
+Validate a production build:
 
 ```bash
 npm run lint
@@ -68,38 +68,38 @@ npm run build
 npm start
 ```
 
-## Penggunaan Canvas
+## Canvas Usage
 
-- Klik profil untuk membuka detail anggota.
-- Tahan Shift, lalu klik beberapa profil untuk memilih banyak profil.
-- Geser salah satu profil yang terpilih untuk memindahkan semuanya.
-- Aktifkan `Mode Grid` untuk mengunci perpindahan pada jarak grid.
-- Posisi akan disimpan otomatis setelah profil dipindahkan.
+- Click a profile to open its details.
+- Hold Shift and click profiles to select multiple profiles.
+- Drag one selected profile to move the entire selection.
+- Enable `Grid Mode` to snap profile movement to the grid.
+- Profile positions are saved automatically after movement.
 
-## Struktur Data
+## Data Structure
 
-- `persons`: biodata dan relasi orang tua.
-- `marriages`: hubungan pasangan dan status pernikahan.
-- `person_positions`: posisi x dan y profil pada canvas.
+- `persons`: profile data and parent relationships.
+- `marriages`: partner relationships and marriage status.
+- `person_positions`: saved profile coordinates on the canvas.
 
-API aplikasi tersedia pada:
+Available API routes:
 
 - `/api/persons`
 - `/api/persons/[id]`
 - `/api/marriages`
 - `/api/person-positions`
 
-## Struktur Proyek
+## Project Structure
 
 ```text
-app/          Halaman, layout, dan API routes
-components/   Komponen canvas, node, modal, dan input
-lib/          Client Supabase dan rate limiter
-types/        Tipe data keluarga
-utils/        Layout tree dan kalkulator kekerabatan
-styles/       Gaya claymorphism
+app/          Pages, layout, and API routes
+components/   Canvas, node, modal, and input components
+lib/          Supabase clients and rate limiter
+types/        Family data types
+utils/        Tree layout and kinship calculation
+styles/       Claymorphism styles
 ```
 
-## Lisensi
+## License
 
-Lisensi proyek dapat ditambahkan sesuai kebutuhan repository.
+No license file is included yet. Add a license before presenting the repository as open source or granting reuse rights; making a repository public by itself does not specify a license.
