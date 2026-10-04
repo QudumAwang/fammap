@@ -32,7 +32,7 @@ export function AddRootMemberModal({
 }: AddRootMemberModalProps) {
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<Gender>("male");
-  const [birthOrder, setBirthOrder] = useState<number>(1);
+  const [birthOrder, setBirthOrder] = useState("1");
   const [lifeStatus, setLifeStatus] = useState<LifeStatus>("alive");
   const [childStatus, setChildStatus] = useState<ChildStatus>("biological");
 
@@ -53,7 +53,7 @@ export function AddRootMemberModal({
     });
 
     setFullName("");
-    setBirthOrder(1);
+    setBirthOrder("1");
     onClose();
   };
 
@@ -107,7 +107,7 @@ export function AddRootMemberModal({
                 type="number"
                 min={1}
                 value={birthOrder}
-                onChange={(e) => setBirthOrder(parseInt(e.target.value) || 1)}
+                onChange={(e) => setBirthOrder(e.target.value)}
                 className="w-full px-3 py-2 text-xs clay-input text-slate-800"
               />
             </div>

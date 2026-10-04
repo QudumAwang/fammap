@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FamMap
 
-## Getting Started
+FamMap adalah aplikasi interaktif untuk mengelola silsilah keluarga, memetakan hubungan kekerabatan, dan menyusun profil keluarga dalam canvas visual.
 
-First, run the development server:
+## Fitur
+
+- Login menggunakan Supabase Auth.
+- Canvas silsilah interaktif berbasis React Flow.
+- Relasi ayah, ibu, anak, pasangan, dan pernikahan.
+- Perhitungan panggilan kekerabatan dalam bahasa Indonesia.
+- Tambah, edit, hapus, dan cari profil keluarga.
+- Pemilihan banyak profil dengan Shift atau Ctrl/Cmd.
+- Mode Grid untuk merapikan posisi profil.
+- Posisi profil tersimpan di Supabase.
+- Antarmuka claymorphism yang responsif.
+
+## Teknologi
+
+- Next.js 16 dengan App Router
+- React 19 dan TypeScript
+- Supabase Auth dan database PostgreSQL
+- React Flow
+- Tailwind CSS
+- Framer Motion dan Lucide React
+
+## Persiapan
+
+Pastikan Node.js 20 atau versi yang lebih baru sudah terpasang.
+
+1. Clone repository dan masuk ke folder proyek.
+
+```bash
+git clone <url-repository> fammap-dumci
+cd fammap-dumci
+npm install
+```
+
+2. Buat project Supabase, lalu jalankan seluruh isi [`supabase_init.sql`](./supabase_init.sql) melalui SQL Editor Supabase.
+
+3. Aktifkan Email provider pada Supabase Auth dan buat akun pengguna untuk login.
+
+4. Buat file `.env.local` pada root proyek:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` hanya digunakan di server dan tidak boleh dikirim ke client atau di-commit ke repository.
+
+## Menjalankan
+
+Mode development:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000), kemudian login menggunakan akun Supabase.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Validasi production:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+npm start
+```
 
-## Learn More
+## Penggunaan Canvas
 
-To learn more about Next.js, take a look at the following resources:
+- Klik profil untuk membuka detail anggota.
+- Tahan Shift, lalu klik beberapa profil untuk memilih banyak profil.
+- Geser salah satu profil yang terpilih untuk memindahkan semuanya.
+- Aktifkan `Mode Grid` untuk mengunci perpindahan pada jarak grid.
+- Posisi akan disimpan otomatis setelah profil dipindahkan.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Struktur Data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `persons`: biodata dan relasi orang tua.
+- `marriages`: hubungan pasangan dan status pernikahan.
+- `person_positions`: posisi x dan y profil pada canvas.
 
-## Deploy on Vercel
+API aplikasi tersedia pada:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `/api/persons`
+- `/api/persons/[id]`
+- `/api/marriages`
+- `/api/person-positions`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Struktur Proyek
+
+```text
+app/          Halaman, layout, dan API routes
+components/   Komponen canvas, node, modal, dan input
+lib/          Client Supabase dan rate limiter
+types/        Tipe data keluarga
+utils/        Layout tree dan kalkulator kekerabatan
+styles/       Gaya claymorphism
+```
+
+## Lisensi
+
+Lisensi proyek dapat ditambahkan sesuai kebutuhan repository.

@@ -29,6 +29,7 @@ interface MemberDetailModalProps {
   onDeletePerson: (id: string) => void;
   onAddChild: (parent: Person, childData: Omit<Person, "id">) => void;
   onAddPartner: (person: Person, partnerData: Omit<Person, "id">, marriageStatus: MarriageStatus) => void;
+  onAddExistingPartner: (person: Person, partnerId: string, marriageStatus: MarriageStatus) => void;
   onAddParent: (child: Person, parentData: Omit<Person, "id">, relationType: "father" | "mother") => void;
 }
 
@@ -61,6 +62,7 @@ export function MemberDetailModal({
   onDeletePerson,
   onAddChild,
   onAddPartner,
+  onAddExistingPartner,
   onAddParent,
 }: MemberDetailModalProps) {
   const [view, setView] = useState<ModalView>("view");
@@ -105,7 +107,10 @@ export function MemberDetailModal({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-4 pr-1 space-y-5">
+        <div
+          className="flex-1 overflow-y-auto overscroll-contain py-4 pr-1 space-y-5"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#94a3b8 transparent" }}
+        >
           {view === "view" && (
             <>
               <div className="flex items-center gap-4">
@@ -268,8 +273,14 @@ export function MemberDetailModal({
           {view === "add_partner" && (
             <AddPartnerForm
               person={person}
+              persons={persons}
+              marriages={marriages}
               onSave={(partnerData, status) => {
                 onAddPartner(person, partnerData, status);
+                setView("view");
+              }}
+              onExistingSave={(partnerId, status) => {
+                onAddExistingPartner(person, partnerId, status);
                 setView("view");
               }}
               onCancel={() => setView("view")}
@@ -338,7 +349,7 @@ function EditMemberForm({
 }) {
   const [fullName, setFullName] = useState(person.full_name);
   const [gender, setGender] = useState<Gender>(person.gender);
-  const [birthOrder, setBirthOrder] = useState<number>(person.birth_order);
+  const [birthOrder, setBirthOrder] = useState(String(person.birth_order));
   const [lifeStatus, setLifeStatus] = useState<LifeStatus>(person.life_status);
   const [childStatus, setChildStatus] = useState<ChildStatus>(person.child_status);
   const [fatherId, setFatherId] = useState<string>(person.father_id || "");
@@ -397,7 +408,7 @@ function EditMemberForm({
             type="number"
             min={1}
             value={birthOrder}
-            onChange={(e) => setBirthOrder(parseInt(e.target.value) || 1)}
+            onChange={(e) => setBirthOrder(e.target.value)}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
           />
         </div>
@@ -495,7 +506,7 @@ function AddChildForm({
 }) {
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<Gender>("male");
-  const [birthOrder, setBirthOrder] = useState<number>(suggestedBirthOrder);
+  const [birthOrder, setBirthOrder] = useState(String(suggestedBirthOrder));
   const [lifeStatus, setLifeStatus] = useState<LifeStatus>("alive");
   const [childStatus, setChildStatus] = useState<ChildStatus>("biological");
 
@@ -557,7 +568,7 @@ function AddChildForm({
             type="number"
             min={1}
             value={birthOrder}
-            onChange={(e) => setBirthOrder(parseInt(e.target.value) || 1)}
+            onChange={(e) => setBirthOrder(e.target.value)}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
           />
         </div>
@@ -609,19 +620,50 @@ function AddChildForm({
 
 function AddPartnerForm({
   person,
+  persons,
+  marriages,
   onSave,
+  onExistingSave,
   onCancel,
 }: {
   person: Person;
+  persons: Person[];
+  marriages: Marriage[];
   onSave: (data: Omit<Person, "id">, status: MarriageStatus) => void;
+  onExistingSave: (partnerId: string, status: MarriageStatus) => void;
   onCancel: () => void;
 }) {
   const [fullName, setFullName] = useState("");
-  const [birthOrder, setBirthOrder] = useState<number>(1);
+  const [birthOrder, setBirthOrder] = useState("1");
   const [lifeStatus, setLifeStatus] = useState<LifeStatus>("alive");
+  const [existingPartnerId, setExistingPartnerId] = useState("");
+
+  const spouseIds = new Set(
+    marriages
+      .filter((m) => m.husband_id === person.id || m.wife_id === person.id)
+      .map((m) => (m.husband_id === person.id ? m.wife_id : m.husband_id))
+  );
+  const existingPartnerOptions: SearchableSelectOption[] = [
+    { value: "", label: "Tambah pasangan baru" },
+    ...persons
+      .filter(
+        (p) =>
+          p.id !== person.id &&
+          p.gender !== person.gender &&
+          !spouseIds.has(p.id)
+      )
+      .map((p) => ({
+        value: p.id,
+        label: `${p.full_name} · ${p.gender === "male" ? "Laki-laki" : "Perempuan"}`,
+      })),
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (existingPartnerId) {
+      onExistingSave(existingPartnerId, "married");
+      return;
+    }
     if (!fullName.trim()) return;
 
     onSave(
@@ -645,19 +687,34 @@ function AddPartnerForm({
       </h3>
       <div>
         <label className="block text-xs font-semibold text-slate-600 mb-1">
-          Nama Lengkap Pasangan
+          Pasangan yang Sudah Ada
         </label>
-        <input
-          type="text"
-          required
-          placeholder="Contoh: Siti Rahma"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+        <SearchableSelect
+          value={existingPartnerId}
+          onChange={setExistingPartnerId}
+          options={existingPartnerOptions}
+          placeholder="Cari profil pasangan..."
           className="w-full px-3 py-2 text-xs clay-input text-slate-800"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      {!existingPartnerId && (
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">
+            Nama Lengkap Pasangan
+          </label>
+          <input
+            type="text"
+            required
+            placeholder="Contoh: Siti Rahma"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full px-3 py-2 text-xs clay-input text-slate-800"
+          />
+        </div>
+      )}
+
+      {!existingPartnerId && <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Jenis Kelamin
@@ -677,13 +734,13 @@ function AddPartnerForm({
             type="number"
             min={1}
             value={birthOrder}
-            onChange={(e) => setBirthOrder(parseInt(e.target.value) || 1)}
+            onChange={(e) => setBirthOrder(e.target.value)}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
           />
         </div>
-      </div>
+      </div>}
 
-      <div className="grid grid-cols-2 gap-3">
+      {!existingPartnerId && <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Status Hidup
@@ -695,7 +752,7 @@ function AddPartnerForm({
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
           />
         </div>
-      </div>
+      </div>}
 
       <div className="flex items-center gap-2 pt-2">
         <button
@@ -729,7 +786,7 @@ function AddParentForm({
     child.father_id ? "mother" : "father"
   );
   const [fullName, setFullName] = useState("");
-  const [birthOrder, setBirthOrder] = useState<number>(1);
+  const [birthOrder, setBirthOrder] = useState("1");
   const [lifeStatus, setLifeStatus] = useState<LifeStatus>("alive");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -801,7 +858,7 @@ function AddParentForm({
             type="number"
             min={1}
             value={birthOrder}
-            onChange={(e) => setBirthOrder(parseInt(e.target.value) || 1)}
+            onChange={(e) => setBirthOrder(e.target.value)}
             className="w-full px-3 py-2 text-xs clay-input text-slate-800"
           />
         </div>

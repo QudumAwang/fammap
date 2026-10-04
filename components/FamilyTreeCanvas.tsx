@@ -527,6 +527,56 @@ export function FamilyTreeCanvas() {
     }
   };
 
+  const handleAddExistingPartner = async (
+    person: Person,
+    partnerId: string,
+    status: MarriageStatus
+  ) => {
+    const partner = persons.find((p) => p.id === partnerId);
+    if (!partner || partner.gender === person.gender) return;
+
+    const husbandId = person.gender === "male" ? person.id : partner.id;
+    const wifeId = person.gender === "female" ? person.id : partner.id;
+    const alreadyMarried = marriages.some(
+      (marriage) =>
+        marriage.husband_id === husbandId && marriage.wife_id === wifeId
+    );
+    if (alreadyMarried) return;
+
+    rememberCurrentPositions();
+    try {
+      const res = await fetch("/api/marriages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          husband_id: husbandId,
+          wife_id: wifeId,
+          marriage_order: 1,
+          status,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        console.error("handleAddExistingPartner:", data.error || res.statusText);
+        return;
+      }
+
+      setMarriages((prev) => [
+        ...prev,
+        {
+          id: data.id,
+          husband_id: husbandId,
+          wife_id: wifeId,
+          marriage_order: 1,
+          status,
+        },
+      ]);
+    } catch (err) {
+      console.error("handleAddExistingPartner:", err instanceof Error ? err.message : err);
+    }
+  };
+
   const handleAddParent = async (
     child: Person,
     parentData: Omit<Person, "id">,
@@ -802,6 +852,7 @@ export function FamilyTreeCanvas() {
         onDeletePerson={handleDeletePerson}
         onAddChild={handleAddChild}
         onAddPartner={handleAddPartner}
+        onAddExistingPartner={handleAddExistingPartner}
         onAddParent={handleAddParent}
       />
 

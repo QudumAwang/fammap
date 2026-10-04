@@ -6,14 +6,14 @@ export function getKinshipTitle(
   persons: Person[],
   marriages: Marriage[]
 ): string {
-  if (!personId || !referenceId) return "Kerabat";
+  if (!personId || !referenceId) return "Non-kerabat";
   if (personId === referenceId) return "Saya";
 
   const personMap = new Map<string, Person>(persons.map((p) => [p.id, p]));
   const target = personMap.get(personId);
   const ref = personMap.get(referenceId);
 
-  if (!target || !ref) return "Kerabat";
+  if (!target || !ref) return "Non-kerabat";
 
   const getSpouseIds = (id: string): string[] => {
     return marriages
@@ -32,8 +32,8 @@ export function getKinshipTitle(
     return target.gender === "male" ? "Suami" : "Istri";
   }
 
-  if (ref.father_id === target.id) return "Ayah";
-  if (ref.mother_id === target.id) return "Ibu";
+  if (ref.father_id === target.id) return ref.child_status === "step" ? "Ayah Tiri" : "Ayah";
+  if (ref.mother_id === target.id) return ref.child_status === "step" ? "Ibu Tiri" : "Ibu";
 
   const father = ref.father_id ? personMap.get(ref.father_id) : undefined;
   const mother = ref.mother_id ? personMap.get(ref.mother_id) : undefined;
@@ -72,6 +72,14 @@ export function getKinshipTitle(
   }
   if ([...grandfathers, ...grandmothers].some((gp) => areSiblings(target, gp))) return "Mbah";
 
+  const isStepSibling =
+    ((target.child_status === "step" || ref.child_status === "step") &&
+      areSiblings(target, ref)) ||
+    [father, mother].some(
+      (p) => p && getSpouseIds(p.id).some((sid) => target.father_id === sid || target.mother_id === sid)
+    );
+  if (isStepSibling) return "Saudara Tiri";
+
   if (areSiblings(target, ref)) {
     if (target.birth_order < ref.birth_order) {
       return target.gender === "male" ? "Kakak (Mas)" : "Kakak (Mbak)";
@@ -82,12 +90,8 @@ export function getKinshipTitle(
     return target.gender === "male" ? "Saudara Laki-laki" : "Saudara Perempuan";
   }
 
-  const isStepSibling = [father, mother].some(
-    (p) => p && getSpouseIds(p.id).some((sid) => target.father_id === sid || target.mother_id === sid)
-  );
-  if (isStepSibling) return "Saudara Tiri";
-
   if (target.father_id === ref.id || target.mother_id === ref.id) {
+    if (target.child_status === "step") return "Anak Tiri";
     return target.gender === "male" ? "Anak Laki-laki" : "Anak Perempuan";
   }
 
@@ -176,5 +180,5 @@ export function getKinshipTitle(
     }
   }
 
-  return "Kerabat";
+  return "Non-kerabat";
 }
