@@ -1,0 +1,60 @@
+html[data-fammap-theme="liquid-glassmorphism"] .clay-bg {
+  background: radial-gradient(ellipse at 15% 20%, #bfdbfe, transparent 38%), radial-gradient(ellipse at 85% 80%, #fbcfe8, transparent 40%), #eef2ff;
+}
+
+html[data-fammap-theme="liquid-glassmorphism"] .clay-card,
+html[data-fammap-theme="liquid-glassmorphism"] .clay-card-active,
+html[data-fammap-theme="liquid-glassmorphism"] .clay-button,
+html[data-fammap-theme="liquid-glassmorphism"] .clay-button-primary,
+html[data-fammap-theme="liquid-glassmorphism"] .clay-button-danger,
+html[data-fammap-theme="liquid-glassmorphism"] .clay-input,
+html[data-fammap-theme="liquid-glassmorphism"] .clay-badge,
+html[data-fammap-theme="liquid-glassmorphism"] .clay-modal {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(226, 232, 255, 0.38));
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: 0 12px 36px rgba(71, 85, 105, 0.16), inset 0 1px rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+}
+
+html[data-fammap-theme="liquid-glassmorphism"] .react-flow__controls {
+  background: rgba(255, 255, 255, 0.72) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+}
+
+html[data-fammap-theme="liquid-glassmorphism"],
+html[data-fammap-theme="liquid-glassmorphism"] * {
+  scrollbar-color: rgba(100, 116, 139, 0.7) rgba(255, 255, 255, 0.25);
+  scrollbar-width: thin;
+}
+
+html[data-fammap-theme="liquid-glassmorphism"] *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-fammap-theme="liquid-glassmorphism"] *::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="liquid-glassmorphism"] *::-webkit-scrollbar-thumb {
+  background: linear-gradient(145deg, rgba(100, 116, 139, 0.75), rgba(148, 163, 184, 0.6));
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="liquid-glassmorphism"][data-fammap-mode="dark"] {
+  --fammap-dark-bg: radial-gradient(ellipse at 15% 20%, #172554, transparent 38%), radial-gradient(ellipse at 85% 80%, #4a1942, transparent 40%), #0b1120;
+  --fammap-dark-surface: linear-gradient(145deg, rgba(30, 41, 59, 0.82), rgba(15, 23, 42, 0.68));
+  --fammap-dark-raised: rgba(51, 65, 85, 0.88);
+  --fammap-dark-primary: linear-gradient(145deg, rgba(30, 64, 175, 0.65), rgba(49, 46, 129, 0.75));
+  --fammap-dark-danger: linear-gradient(145deg, rgba(136, 19, 55, 0.65), rgba(80, 20, 48, 0.8));
+  --fammap-dark-border: rgba(226, 232, 240, 0.24);
+  --fammap-dark-shadow: 0 12px 36px rgba(0, 0, 0, 0.36), inset 0 1px rgba(255, 255, 255, 0.08);
+  --fammap-dark-text: #f1f5f9;
+  --fammap-dark-muted: #cbd5e1;
+  --fammap-dark-scroll-track: rgba(15, 23, 42, 0.55);
+  --fammap-dark-scroll-thumb: rgba(148, 163, 184, 0.72);
+}

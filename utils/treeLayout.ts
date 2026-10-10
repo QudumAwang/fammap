@@ -153,8 +153,8 @@ export function generateTreeLayout(
         target: person.id,
         type: "smoothstep",
         style: {
-          stroke: "#94a3b8",
-          strokeWidth: 2,
+          stroke: "#475569",
+          strokeWidth: 2.5,
         },
       });
     }
@@ -166,8 +166,8 @@ export function generateTreeLayout(
         target: person.id,
         type: "smoothstep",
         style: {
-          stroke: "#cbd5e1",
-          strokeWidth: 1.5,
+          stroke: "#64748b",
+          strokeWidth: 2,
           strokeDasharray: "3 3",
         },
       });

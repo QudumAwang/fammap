@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from "react";
 import {
   ReactFlow,
   Background,
@@ -13,8 +13,20 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "@/styles/claymorphism.css";
+import "@/styles/glassmorphism.css";
+import "@/styles/liquid-glassmorphism.css";
+import "@/styles/neumorphism.css";
+import "@/styles/skeuomorphism.css";
 
 import { Person, Marriage, MarriageStatus } from "@/types/family";
+import {
+  FAMILY_TREE_THEMES,
+  setFamilyTreeTheme,
+  setFamilyTreeMode,
+  getFamilyTreeAppearance,
+  getServerFamilyTreeAppearance,
+  subscribeToFamilyTreeAppearance,
+} from "@/utils/theme";
 import { generateTreeLayout } from "@/utils/treeLayout";
 import { getKinshipTitle } from "@/utils/kinship";
 import { FamilyMemberNode } from "./FamilyMemberNode";
@@ -30,6 +42,8 @@ import {
   Network,
   Info,
   Loader2,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 const nodeTypes = {
@@ -125,6 +139,11 @@ export function FamilyTreeCanvas() {
   const [isAddRootOpen, setIsAddRootOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isGridMode, setIsGridMode] = useState(false);
+  const { theme, mode } = useSyncExternalStore(
+    subscribeToFamilyTreeAppearance,
+    getFamilyTreeAppearance,
+    getServerFamilyTreeAppearance
+  );
 
   const handleSelectPerson = useCallback((person: Person) => {
     setSelectedPerson(person);
@@ -311,6 +330,15 @@ export function FamilyTreeCanvas() {
 
   const handleSetReferenceUser = (id: string) => {
     setReferenceUserId(id);
+  };
+
+  const handleThemeChange = (value: string) => {
+    setFamilyTreeTheme(value as typeof theme);
+  };
+
+  const handleToggleMode = () => {
+    const nextMode = mode === "dark" ? "light" : "dark";
+    setFamilyTreeMode(nextMode);
   };
 
   const ensureMarriage = async (husbandId: string | null, wifeId: string | null) => {
@@ -701,6 +729,26 @@ export function FamilyTreeCanvas() {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl clay-badge text-xs text-slate-500">
+            <span>Gaya:</span>
+            <SearchableSelect
+              value={theme}
+              onChange={handleThemeChange}
+              options={FAMILY_TREE_THEMES}
+              ariaLabel="Gaya tampilan"
+              className="w-36 bg-transparent font-bold text-indigo-700 outline-none cursor-pointer text-xs"
+            />
+          </div>
+          <button
+            type="button"
+            aria-label={mode === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+            aria-pressed={mode === "dark"}
+            title={mode === "dark" ? "Mode terang" : "Mode gelap"}
+            onClick={handleToggleMode}
+            className="clay-button flex h-9 w-9 items-center justify-center text-slate-700"
+          >
+            {mode === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           {persons.length > 0 && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl clay-badge text-xs">
               <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
@@ -803,7 +851,7 @@ export function FamilyTreeCanvas() {
           attributionPosition="bottom-right"
         >
           <Background
-            color={isGridMode ? "#94a3b8" : "#cbd5e1"}
+            color={isGridMode ? "#cbd5e1" : "#e2e8f0"}
             gap={isGridMode ? GRID_SIZE : 24}
             size={isGridMode ? 1 : 1.5}
             variant={isGridMode ? BackgroundVariant.Lines : BackgroundVariant.Dots}

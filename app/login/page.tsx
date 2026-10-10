@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Network, Mail, Lock, Loader2, LogIn } from "lucide-react";
 import "@/styles/claymorphism.css";
+import "@/styles/glassmorphism.css";
+import "@/styles/liquid-glassmorphism.css";
+import "@/styles/neumorphism.css";
+import "@/styles/skeuomorphism.css";
+import { getFamilyTreeTheme } from "@/utils/theme";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +21,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     let isMounted = true;
+    getFamilyTreeTheme();
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;

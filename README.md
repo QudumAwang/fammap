@@ -12,7 +12,8 @@ FamMap is an interactive family-tree application for managing family profiles, v
 - Multi-select profiles with Shift or Ctrl/Cmd.
 - Grid mode for aligning profiles.
 - Automatic profile position persistence in Supabase.
-- Responsive claymorphism interface.
+- Responsive interface with Claymorphism, Glassmorphism, Liquid Glass, Neumorphism, and Skeuomorphism styles.
+- Independent light and dark appearance modes.
 
 ## Tech Stack
 
@@ -76,6 +77,13 @@ npm start
 - Enable `Grid Mode` to snap profile movement to the grid.
 - Profile positions are saved automatically after movement.
 
+## Appearance
+
+- A style is selected at random when FamMap opens in a new browser tab.
+- Choose another style from the `Gaya` dropdown to use it for the current tab session. The selection is not saved after the tab is closed.
+- Use the sun/moon button to switch between light and dark mode. The mode is independent of the selected style and is saved in the browser.
+- The selected appearance applies to the family tree, profile dialogs, and login screen.
+
 ## Data Structure
 
 - `persons`: profile data and parent relationships.
@@ -96,8 +104,8 @@ app/          Pages, layout, and API routes
 components/   Canvas, node, modal, and input components
 lib/          Supabase clients and rate limiter
 types/        Family data types
-utils/        Tree layout and kinship calculation
-styles/       Claymorphism styles
+utils/        Tree layout, kinship calculation, and appearance settings
+styles/       Five selectable visual styles with light and dark variants
 ```
 
 ## License

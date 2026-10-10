@@ -98,3 +98,140 @@
   box-shadow: 16px 16px 32px rgba(0,0,0,0.18), inset -8px -8px 16px rgba(0,0,0,0.06), inset 8px 8px 16px rgba(255,255,255,0.9);
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
+
+html[data-fammap-theme="claymorphism"],
+html[data-fammap-theme="claymorphism"] * {
+  scrollbar-color: #94a3b8 #e0e5ec;
+  scrollbar-width: thin;
+}
+
+html[data-fammap-theme="claymorphism"] *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-fammap-theme="claymorphism"] *::-webkit-scrollbar-track {
+  background: #e0e5ec;
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="claymorphism"] *::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border: 2px solid #e0e5ec;
+  border-radius: 8px;
+}
+
+html[data-fammap-theme][data-fammap-mode="light"] {
+  color-scheme: light;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] {
+  color-scheme: dark;
+}
+
+html[data-fammap-theme="claymorphism"][data-fammap-mode="dark"] {
+  --fammap-dark-bg: #202630;
+  --fammap-dark-surface: #2d3542;
+  --fammap-dark-raised: #343e4d;
+  --fammap-dark-primary: #293d58;
+  --fammap-dark-danger: #512f3a;
+  --fammap-dark-border: rgba(203, 213, 225, 0.18);
+  --fammap-dark-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), inset -5px -5px 10px rgba(0, 0, 0, 0.12), inset 5px 5px 10px rgba(255, 255, 255, 0.04);
+  --fammap-dark-text: #e2e8f0;
+  --fammap-dark-muted: #cbd5e1;
+  --fammap-dark-scroll-track: #252c37;
+  --fammap-dark-scroll-thumb: #64748b;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] body,
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-bg {
+  background: var(--fammap-dark-bg);
+  color: var(--fammap-dark-text);
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-card,
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-card-active,
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-modal,
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-badge,
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-badge-inset,
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-button,
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-input {
+  background: var(--fammap-dark-surface);
+  border-color: var(--fammap-dark-border);
+  box-shadow: var(--fammap-dark-shadow);
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-button-primary {
+  background: var(--fammap-dark-primary);
+  border-color: var(--fammap-dark-border);
+  box-shadow: var(--fammap-dark-shadow);
+  color: var(--fammap-dark-text);
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .clay-button-danger {
+  background: var(--fammap-dark-danger);
+  border-color: var(--fammap-dark-border);
+  box-shadow: var(--fammap-dark-shadow);
+  color: var(--fammap-dark-text);
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .text-slate-800,
+html[data-fammap-theme][data-fammap-mode="dark"] .text-slate-700 {
+  color: var(--fammap-dark-text) !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .text-slate-600,
+html[data-fammap-theme][data-fammap-mode="dark"] .text-slate-500 {
+  color: var(--fammap-dark-muted) !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] [class~="bg-slate-100/50"],
+html[data-fammap-theme][data-fammap-mode="dark"] [class~="bg-slate-200/50"] {
+  background-color: var(--fammap-dark-raised) !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .react-flow__controls {
+  background: var(--fammap-dark-surface) !important;
+  border-color: var(--fammap-dark-border) !important;
+  box-shadow: var(--fammap-dark-shadow) !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .react-flow__controls button {
+  background: var(--fammap-dark-surface) !important;
+  border-color: var(--fammap-dark-border) !important;
+  color: var(--fammap-dark-text) !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .react-flow__controls button svg {
+  fill: var(--fammap-dark-text);
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .react-flow__background-pattern.dots {
+  fill: #64748b !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .react-flow__background-pattern.lines {
+  stroke: #64748b !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] .react-flow__edge-path {
+  stroke: #cbd5e1 !important;
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"],
+html[data-fammap-theme][data-fammap-mode="dark"] * {
+  scrollbar-color: var(--fammap-dark-scroll-thumb) var(--fammap-dark-scroll-track);
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] *::-webkit-scrollbar-track {
+  background: var(--fammap-dark-scroll-track);
+}
+
+html[data-fammap-theme][data-fammap-mode="dark"] *::-webkit-scrollbar-thumb {
+  background: var(--fammap-dark-scroll-thumb);
+  border-color: var(--fammap-dark-scroll-track);
+}

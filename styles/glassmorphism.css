@@ -1,0 +1,60 @@
+html[data-fammap-theme="glassmorphism"] .clay-bg {
+  background: linear-gradient(135deg, #dbeafe, #ede9fe 55%, #fce7f3);
+}
+
+html[data-fammap-theme="glassmorphism"] .clay-card,
+html[data-fammap-theme="glassmorphism"] .clay-card-active,
+html[data-fammap-theme="glassmorphism"] .clay-button,
+html[data-fammap-theme="glassmorphism"] .clay-button-primary,
+html[data-fammap-theme="glassmorphism"] .clay-button-danger,
+html[data-fammap-theme="glassmorphism"] .clay-input,
+html[data-fammap-theme="glassmorphism"] .clay-badge,
+html[data-fammap-theme="glassmorphism"] .clay-modal {
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.12);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+html[data-fammap-theme="glassmorphism"] .react-flow__controls {
+  background: rgba(255, 255, 255, 0.48) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+html[data-fammap-theme="glassmorphism"],
+html[data-fammap-theme="glassmorphism"] * {
+  scrollbar-color: rgba(100, 116, 139, 0.65) rgba(255, 255, 255, 0.2);
+  scrollbar-width: thin;
+}
+
+html[data-fammap-theme="glassmorphism"] *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-fammap-theme="glassmorphism"] *::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="glassmorphism"] *::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.65);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="glassmorphism"][data-fammap-mode="dark"] {
+  --fammap-dark-bg: linear-gradient(135deg, #0f172a, #1e1b4b 55%, #312e51);
+  --fammap-dark-surface: rgba(15, 23, 42, 0.65);
+  --fammap-dark-raised: rgba(30, 41, 59, 0.85);
+  --fammap-dark-primary: rgba(30, 64, 175, 0.4);
+  --fammap-dark-danger: rgba(136, 19, 55, 0.42);
+  --fammap-dark-border: rgba(226, 232, 240, 0.2);
+  --fammap-dark-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+  --fammap-dark-text: #f1f5f9;
+  --fammap-dark-muted: #cbd5e1;
+  --fammap-dark-scroll-track: rgba(15, 23, 42, 0.45);
+  --fammap-dark-scroll-thumb: rgba(148, 163, 184, 0.65);
+}

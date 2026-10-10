@@ -11,8 +11,9 @@ export interface SearchableSelectOption {
 
 interface SearchableSelectProps {
   value: string;
-  options: SearchableSelectOption[];
+  options: readonly SearchableSelectOption[];
   onChange: (value: string) => void;
+  ariaLabel?: string;
   className?: string;
   placeholder?: string;
 }
@@ -21,6 +22,7 @@ export function SearchableSelect({
   value,
   options,
   onChange,
+  ariaLabel,
   className = "",
   placeholder = "Pilih...",
 }: SearchableSelectProps) {
@@ -93,6 +95,7 @@ export function SearchableSelect({
     <div ref={containerRef} className="relative">
       <input
         type="text"
+        aria-label={ariaLabel}
         value={isOpen ? query : selectedOption?.label || ""}
         placeholder={placeholder}
         onFocus={() => {
@@ -128,8 +131,6 @@ export function SearchableSelect({
               left: dropdownPosition.left,
               width: dropdownPosition.width,
               maxHeight: dropdownPosition.maxHeight,
-              scrollbarWidth: "thin",
-              scrollbarColor: "#94a3b8 transparent",
             }}
           >
             {filteredOptions.length > 0 ? (
@@ -139,7 +140,7 @@ export function SearchableSelect({
                   type="button"
                   disabled={option.disabled}
                   onClick={() => selectOption(option)}
-                  className="w-full rounded-lg px-2.5 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg px-2.5 py-2 text-left text-xs text-slate-700 clay-button disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {option.label}
                 </button>

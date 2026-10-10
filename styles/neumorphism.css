@@ -1,0 +1,63 @@
+html[data-fammap-theme="neumorphism"] .clay-bg {
+  background-color: #e4e9f0;
+}
+
+html[data-fammap-theme="neumorphism"] .clay-card,
+html[data-fammap-theme="neumorphism"] .clay-card-active,
+html[data-fammap-theme="neumorphism"] .clay-button,
+html[data-fammap-theme="neumorphism"] .clay-button-primary,
+html[data-fammap-theme="neumorphism"] .clay-button-danger,
+html[data-fammap-theme="neumorphism"] .clay-input,
+html[data-fammap-theme="neumorphism"] .clay-badge,
+html[data-fammap-theme="neumorphism"] .clay-modal {
+  background: #e4e9f0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 7px 7px 14px #c5cad0, -7px -7px 14px #ffffff;
+}
+
+html[data-fammap-theme="neumorphism"] .clay-button:active,
+html[data-fammap-theme="neumorphism"] .clay-button-primary:active,
+html[data-fammap-theme="neumorphism"] .clay-input:focus {
+  box-shadow: inset 4px 4px 8px #c5cad0, inset -4px -4px 8px #ffffff !important;
+}
+
+html[data-fammap-theme="neumorphism"] .react-flow__controls {
+  background: #e4e9f0 !important;
+  box-shadow: 7px 7px 14px #c5cad0, -7px -7px 14px #ffffff !important;
+}
+
+html[data-fammap-theme="neumorphism"],
+html[data-fammap-theme="neumorphism"] * {
+  scrollbar-color: #aeb8c5 #e4e9f0;
+  scrollbar-width: thin;
+}
+
+html[data-fammap-theme="neumorphism"] *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-fammap-theme="neumorphism"] *::-webkit-scrollbar-track {
+  background: #e4e9f0;
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="neumorphism"] *::-webkit-scrollbar-thumb {
+  background: #aeb8c5;
+  border: 2px solid #e4e9f0;
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="neumorphism"][data-fammap-mode="dark"] {
+  --fammap-dark-bg: #202630;
+  --fammap-dark-surface: #272f3a;
+  --fammap-dark-raised: #303a47;
+  --fammap-dark-primary: #263b56;
+  --fammap-dark-danger: #4b2c37;
+  --fammap-dark-border: rgba(203, 213, 225, 0.08);
+  --fammap-dark-shadow: 7px 7px 14px #151a21, -7px -7px 14px #2d3643;
+  --fammap-dark-text: #e2e8f0;
+  --fammap-dark-muted: #cbd5e1;
+  --fammap-dark-scroll-track: #202630;
+  --fammap-dark-scroll-thumb: #566477;
+}

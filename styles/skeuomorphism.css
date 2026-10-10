@@ -1,0 +1,67 @@
+html[data-fammap-theme="skeuomorphism"] .clay-bg {
+  background: linear-gradient(145deg, #d6d0c4, #f0e9db);
+}
+
+html[data-fammap-theme="skeuomorphism"] .clay-card,
+html[data-fammap-theme="skeuomorphism"] .clay-card-active,
+html[data-fammap-theme="skeuomorphism"] .clay-modal {
+  background: linear-gradient(160deg, #fffdf7, #e4dccb);
+  border: 1px solid #c9bea9;
+  box-shadow: 0 3px 7px rgba(58, 45, 28, 0.2), inset 0 1px #ffffff;
+}
+
+html[data-fammap-theme="skeuomorphism"] .clay-button,
+html[data-fammap-theme="skeuomorphism"] .clay-button-primary,
+html[data-fammap-theme="skeuomorphism"] .clay-button-danger {
+  background: linear-gradient(#fffefa, #d8cfbe);
+  border: 1px solid #b9ad98;
+  box-shadow: 0 2px 3px rgba(58, 45, 28, 0.25), inset 0 1px #ffffff;
+}
+
+html[data-fammap-theme="skeuomorphism"] .clay-input,
+html[data-fammap-theme="skeuomorphism"] .clay-badge {
+  background: linear-gradient(#e5dece, #fdfaf3);
+  border: 1px solid #c9bea9;
+  box-shadow: inset 0 1px 3px rgba(58, 45, 28, 0.16);
+}
+
+html[data-fammap-theme="skeuomorphism"] .react-flow__controls {
+  background: linear-gradient(#fffefa, #e4dccb) !important;
+  box-shadow: 0 3px 7px rgba(58, 45, 28, 0.2), inset 0 1px #ffffff !important;
+}
+
+html[data-fammap-theme="skeuomorphism"],
+html[data-fammap-theme="skeuomorphism"] * {
+  scrollbar-color: #a99b82 #e4dccb;
+  scrollbar-width: thin;
+}
+
+html[data-fammap-theme="skeuomorphism"] *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-fammap-theme="skeuomorphism"] *::-webkit-scrollbar-track {
+  background: #e4dccb;
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="skeuomorphism"] *::-webkit-scrollbar-thumb {
+  background: linear-gradient(#c5b99f, #92836b);
+  border: 2px solid #e4dccb;
+  border-radius: 8px;
+}
+
+html[data-fammap-theme="skeuomorphism"][data-fammap-mode="dark"] {
+  --fammap-dark-bg: linear-gradient(145deg, #211d19, #322a23);
+  --fammap-dark-surface: linear-gradient(160deg, #3a332b, #29231e);
+  --fammap-dark-raised: linear-gradient(160deg, #463d32, #302820);
+  --fammap-dark-primary: linear-gradient(#39485b, #273342);
+  --fammap-dark-danger: linear-gradient(#613b43, #3e292e);
+  --fammap-dark-border: #5b4e3e;
+  --fammap-dark-shadow: 0 3px 7px rgba(0, 0, 0, 0.48), inset 0 1px rgba(255, 255, 255, 0.08);
+  --fammap-dark-text: #f1e8d8;
+  --fammap-dark-muted: #d1c4ad;
+  --fammap-dark-scroll-track: #29231e;
+  --fammap-dark-scroll-thumb: #71604a;
+}
