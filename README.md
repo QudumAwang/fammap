@@ -2,6 +2,8 @@
 
 FamMap is an interactive family-tree application for managing family profiles, visualizing relationships, and organizing family data on a canvas.
 
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/awangqudum)
+
 ## Features
 
 - Supabase Auth login.
@@ -31,8 +33,8 @@ Node.js 20 or newer is required.
 1. Clone the repository and open the project directory.
 
 ```bash
-git clone <repository-url> fammap-dumci
-cd fammap-dumci
+git clone <repository-url> fammap
+cd fammap
 npm install
 ```
 
@@ -50,6 +52,22 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 Keep `SUPABASE_SERVICE_ROLE_KEY` server-side. Never expose or commit it.
+
+## Deployment
+
+### GitHub and Vercel
+
+Import this repository in Vercel and connect it to GitHub for automatic deployments on every push. Add the four Supabase environment variables above in the Vercel project settings, then deploy. The database setup and Email provider must be configured in Supabase as described above.
+
+### CLI setup
+
+For a one-time deployment from your terminal, create a new Supabase project and enable its Email provider first. Install Git, Node.js 20+, and npm, then run the setup script from the repository root:
+
+```bash
+bash scripts/setup.sh
+```
+
+The script asks for your Supabase project details, applies the database schema, links or creates a Vercel project, saves the production environment variables, and deploys to Vercel. It uses the Supabase and Vercel CLIs through `npx`; sign in when prompted. Use a new Supabase database for this setup. Existing databases should use the GitHub and dashboard setup above.
 
 ## Run the Project
 
@@ -108,6 +126,10 @@ utils/        Tree layout, kinship calculation, and appearance settings
 styles/       Five selectable visual styles with light and dark variants
 ```
 
+## Support
+
+Need help setting up FamMap on your own server? DM me on Instagram: [@udums_dc](https://instagram.com/udums_dc).
+
 ## License
 
-No license file is included yet. Add a license before presenting the repository as open source or granting reuse rights; making a repository public by itself does not specify a license.
+FamMap is licensed under the [MIT License](./LICENSE).
