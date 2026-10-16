@@ -2,6 +2,12 @@
 
 FamMap is an interactive family-tree application for managing family profiles, visualizing relationships, and organizing family data on a canvas.
 
+## Live Demo
+
+[![FamMap live demo preview](./public/demo-preview.jpg)](https://fammap-demo.vercel.app/)
+
+Try the [interactive demo](https://fammap-demo.vercel.app/). Demo changes are saved in your browser.
+
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/awangqudum)
 
 ## Features
