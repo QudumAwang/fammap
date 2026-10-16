@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from "react";
+import React, { startTransition, useState, useMemo, useCallback, useEffect, useSyncExternalStore } from "react";
 import {
   ReactFlow,
   Background,
@@ -44,7 +44,9 @@ import {
   Loader2,
   Moon,
   Sun,
+  RotateCcw,
 } from "lucide-react";
+import { createDemoId, loadDemoData, resetDemoData, saveDemoData } from "@/utils/demoStorage";
 
 const nodeTypes = {
   familyMember: FamilyMemberNode,
@@ -56,12 +58,13 @@ const edgeTypes = {
 
 const GRID_SIZE = 40;
 const SNAP_GRID: [number, number] = [GRID_SIZE, GRID_SIZE];
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 type RelationLink = { id: string; key: "father_id" | "mother_id"; value: string };
 type NodePosition = { x: number; y: number };
 
 async function saveNodePositions(positions: { personId: string; position: NodePosition }[]) {
-  if (positions.length === 0) return;
+  if (isDemoMode || positions.length === 0) return;
   try {
     await fetch("/api/person-positions", {
       method: "PUT",
@@ -151,6 +154,27 @@ export function FamilyTreeCanvas() {
 
   useEffect(() => {
     let isMounted = true;
+
+    if (isDemoMode) {
+      const data = loadDemoData();
+      const initialLayout = generateTreeLayout(
+        data.persons,
+        data.marriages,
+        data.persons[0]?.id || "",
+        handleSelectPerson,
+        data.nodePositions
+      );
+      startTransition(() => {
+        setPersons(data.persons);
+        setMarriages(data.marriages);
+        setReferenceUserId(data.persons[0]?.id || "");
+        setNodePositions(
+          Object.fromEntries(initialLayout.nodes.map((node) => [node.id, node.position]))
+        );
+        setIsLoading(false);
+      });
+      return;
+    }
 
     async function fetchData() {
       setIsLoading(true);
@@ -268,6 +292,11 @@ export function FamilyTreeCanvas() {
     };
   }, [handleSelectPerson]);
 
+  useEffect(() => {
+    if (!isDemoMode || isLoading) return;
+    saveDemoData({ persons, marriages, nodePositions });
+  }, [persons, marriages, nodePositions, isLoading]);
+
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
     return generateTreeLayout(persons, marriages, referenceUserId, handleSelectPerson, nodePositions);
   }, [persons, marriages, referenceUserId, handleSelectPerson, nodePositions]);
@@ -341,9 +370,41 @@ export function FamilyTreeCanvas() {
     setFamilyTreeMode(nextMode);
   };
 
+  const handleResetDemo = () => {
+    if (!window.confirm("Reset demo data to its original state?")) return;
+    const data = resetDemoData();
+    const initialLayout = generateTreeLayout(
+      data.persons,
+      data.marriages,
+      data.persons[0]?.id || "",
+      handleSelectPerson
+    );
+    setPersons(data.persons);
+    setMarriages(data.marriages);
+    setReferenceUserId(data.persons[0]?.id || "");
+    setNodePositions(
+      Object.fromEntries(initialLayout.nodes.map((node) => [node.id, node.position]))
+    );
+    setSelectedPerson(null);
+    setSearchQuery("");
+  };
+
   const ensureMarriage = async (husbandId: string | null, wifeId: string | null) => {
     if (!husbandId || !wifeId) return;
     if (marriages.some((m) => m.husband_id === husbandId && m.wife_id === wifeId)) return;
+    if (isDemoMode) {
+      setMarriages((prev) => [
+        ...prev,
+        {
+          id: createDemoId(),
+          husband_id: husbandId,
+          wife_id: wifeId,
+          marriage_order: 1,
+          status: "married",
+        },
+      ]);
+      return;
+    }
     try {
       const res = await fetch("/api/marriages", {
         method: "POST",
@@ -366,6 +427,10 @@ export function FamilyTreeCanvas() {
     const previousPerson = persons.find((p) => p.id === updated.id) || selectedPerson;
     setPersons((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     setSelectedPerson(updated);
+    if (isDemoMode) {
+      await ensureMarriage(updated.father_id, updated.mother_id);
+      return;
+    }
     try {
       const res = await fetch(`/api/persons/${updated.id}`, {
         method: "PATCH",
@@ -424,6 +489,7 @@ export function FamilyTreeCanvas() {
         setReferenceUserId(remaining[0].id);
       }
     }
+    if (isDemoMode) return;
     try {
       const res = await fetch(`/api/persons/${id}`, {
         method: "DELETE",
@@ -439,6 +505,10 @@ export function FamilyTreeCanvas() {
 
   const handleAddChild = async (parent: Person, childData: Omit<Person, "id">) => {
     rememberCurrentPositions();
+    if (isDemoMode) {
+      setPersons((prev) => [...prev, { ...childData, id: createDemoId() }]);
+      return;
+    }
     try {
       const res = await fetch("/api/persons", {
         method: "POST",
@@ -476,6 +546,26 @@ export function FamilyTreeCanvas() {
     status: MarriageStatus
   ) => {
     rememberCurrentPositions();
+    if (isDemoMode) {
+      const partnerId = createDemoId();
+      const newPartner: Person = { ...partnerData, id: partnerId };
+      const husbandId = person.gender === "male" ? person.id : partnerId;
+      const wifeId = person.gender === "female" ? person.id : partnerId;
+      const parentKey = person.gender === "male" ? "father_id" : "mother_id";
+      const partnerKey = person.gender === "male" ? "mother_id" : "father_id";
+      const orphans = persons.filter((p) => p[parentKey] === person.id && !p[partnerKey]);
+      const linkedIds = new Set(orphans.map((p) => p.id));
+
+      setPersons((prev) => [
+        ...prev.map((p) => (linkedIds.has(p.id) ? { ...p, [partnerKey]: partnerId } : p)),
+        newPartner,
+      ]);
+      setMarriages((prev) => [
+        ...prev,
+        { id: createDemoId(), husband_id: husbandId, wife_id: wifeId, marriage_order: 1, status },
+      ]);
+      return;
+    }
     try {
       const pRes = await fetch("/api/persons", {
         method: "POST",
@@ -572,6 +662,13 @@ export function FamilyTreeCanvas() {
     if (alreadyMarried) return;
 
     rememberCurrentPositions();
+    if (isDemoMode) {
+      setMarriages((prev) => [
+        ...prev,
+        { id: createDemoId(), husband_id: husbandId, wife_id: wifeId, marriage_order: 1, status },
+      ]);
+      return;
+    }
     try {
       const res = await fetch("/api/marriages", {
         method: "POST",
@@ -611,6 +708,19 @@ export function FamilyTreeCanvas() {
     relationType: "father" | "mother"
   ) => {
     rememberCurrentPositions();
+    if (isDemoMode) {
+      const newParentId = createDemoId();
+      const newParent: Person = { ...parentData, id: newParentId };
+      const parentKey = relationType === "father" ? "father_id" : "mother_id";
+      const updatedChild: Person = { ...child, [parentKey]: newParentId };
+      setPersons((prev) => [
+        ...prev.map((p) => (p.id === child.id ? updatedChild : p)),
+        newParent,
+      ]);
+      setSelectedPerson(updatedChild);
+      await ensureMarriage(updatedChild.father_id, updatedChild.mother_id);
+      return;
+    }
     try {
       const res = await fetch("/api/persons", {
         method: "POST",
@@ -666,6 +776,12 @@ export function FamilyTreeCanvas() {
 
   const handleAddRootMember = async (memberData: Omit<Person, "id">) => {
     rememberCurrentPositions();
+    if (isDemoMode) {
+      const newPerson: Person = { ...memberData, id: createDemoId() };
+      setPersons((prev) => [...prev, newPerson]);
+      if (!referenceUserId) setReferenceUserId(newPerson.id);
+      return;
+    }
     try {
       const res = await fetch("/api/persons", {
         method: "POST",
@@ -817,6 +933,17 @@ export function FamilyTreeCanvas() {
             <Grid3X3 className="w-3.5 h-3.5" />
             <span>{isGridMode ? "Grid Aktif" : "Mode Grid"}</span>
           </button>
+
+          {isDemoMode && (
+            <button
+              type="button"
+              onClick={handleResetDemo}
+              className="py-2 px-3.5 clay-button text-xs font-semibold flex items-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Demo</span>
+            </button>
+          )}
 
         </div>
       </header>

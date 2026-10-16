@@ -25,6 +25,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
     let isMounted = true;
     getFamilyTreeTheme();
 
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       if (!session) {
@@ -52,6 +56,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
       subscription.unsubscribe();
     };
   }, [router]);
+
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
